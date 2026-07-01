@@ -43,5 +43,7 @@ func main() {
 	})
 
 	fmt.Println("goAuthy is listening at:", cfg.ListenAddr)
-	gRouter.Run(cfg.ListenAddr)
+	if err := gRouter.Run(cfg.ListenAddr); err != nil {
+		panic(err)
+	}
 }
