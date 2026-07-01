@@ -2,25 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/caarlos0/env/v11"
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"net/http"
+	"github.com/Stipulations/goAuthy/internal"
+	"github.com/gin-gonic/gin"
 )
 
-type Config struct {
-	AppState   string `env:"AppState,required"`
-	ListenAddr string `env:"ListenerAddr,required"`
-}
-
 func main() {
-	if err := godotenv.Load(); err != nil {
-		panic("Please create a .env file")
-	}
 
-	var cfg Config
-	if err := env.Parse(&cfg); err != nil {
-		panic("Please fill in the AppState and or ListenerAddr in the .env file")
+	cfg, err := config.Load()
+	if err != nil {
+		panic(err)
 	}
 
 	var gRouter *gin.Engine
