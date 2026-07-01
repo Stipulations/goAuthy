@@ -9,6 +9,7 @@ type Config struct {
 	AppState   string `env:"AppState,required"`
 	ListenAddr string `env:"ListenerAddr,required"`
 	DatabaseURL string `env:"DatabaseURL,required"`
+	JWTSecret string `env:"JWTSecret,required"`
 }
 
 func Load() (Config, error) {

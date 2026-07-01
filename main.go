@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/Stipulations/goAuthy/internal/config"
 	"github.com/Stipulations/goAuthy/internal/database"
 	"github.com/Stipulations/goAuthy/internal/handler"
+	"github.com/Stipulations/goAuthy/internal/jwt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +24,12 @@ func main() {
 		panic(err)
 	}
 	defer pool.Close()
+	if err := database.Migrate(ctx, pool); err != nil {
+		panic(err)
+	}
+	if err := database.CreateAdmin(ctx, pool); err != nil {
+		panic(err)
+	}
 
 	var gRouter *gin.Engine
 
@@ -36,7 +44,8 @@ func main() {
 		panic("AppState has to be either 'prod' or 'dev'")
 	}
 
-	h := handler.New(pool)
+	tokenSvc := jwt.New(cfg.JWTSecret)
+	h := handler.New(pool, tokenSvc)
 	h.RegisterRoutes(gRouter)
 
 	fmt.Println("goAuthy is listening at:", cfg.ListenAddr)
