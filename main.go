@@ -2,15 +2,39 @@ package main
 
 import (
 	"fmt"
+	"github.com/caarlos0/env/v11"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"net/http"
 )
 
-func main() {
-	skidlistener := "127.0.0.1:6969"
+type Config struct {
+	AppState   string `env:"AppState,required"`
+	ListenAddr string `env:"ListenerAddr,required"`
+}
 
-	gin.SetMode(gin.ReleaseMode)
-	gRouter := gin.Default()
+func main() {
+	if err := godotenv.Load(); err != nil {
+		panic("Please create a .env file")
+	}
+
+	var cfg Config
+	if err := env.Parse(&cfg); err != nil {
+		panic("Please fill in the AppState and or ListenerAddr in the .env file")
+	}
+
+	var gRouter *gin.Engine
+
+	switch cfg.AppState {
+	case "prod":
+		gin.SetMode(gin.ReleaseMode)
+		gRouter = gin.New()
+		gRouter.Use(gin.Recovery())
+	case "dev":
+		gRouter = gin.Default()
+	default:
+		panic("AppState has to be either 'prod' or 'dev'")
+	}
 
 	gRouter.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -18,6 +42,6 @@ func main() {
 		})
 	})
 
-	fmt.Println("goAuthy is listening at:", skidlistener)
-	gRouter.Run(skidlistener)
+	fmt.Println("goAuthy is listening at:", cfg.ListenAddr)
+	gRouter.Run(cfg.ListenAddr)
 }
