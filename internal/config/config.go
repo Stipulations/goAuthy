@@ -8,6 +8,7 @@ import(
 type Config struct {
 	AppState   string `env:"AppState,required"`
 	ListenAddr string `env:"ListenerAddr,required"`
+	DatabaseURL string `env:"DatabaseURL,required"`
 }
 
 func Load() (Config, error) {

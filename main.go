@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
-	"github.com/Stipulations/goAuthy/internal"
+	"github.com/Stipulations/goAuthy/internal/config"
+	"github.com/Stipulations/goAuthy/internal/database"
+	"github.com/Stipulations/goAuthy/internal/handler"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,6 +15,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	ctx := context.Background()
+	pool, err := database.New(ctx, cfg.DatabaseURL)
+	if err != nil {
+		panic(err)
+	}
+	defer pool.Close()
 
 	var gRouter *gin.Engine
 
@@ -27,11 +36,8 @@ func main() {
 		panic("AppState has to be either 'prod' or 'dev'")
 	}
 
-	gRouter.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"hello": "world",
-		})
-	})
+	h := handler.New(pool)
+	h.RegisterRoutes(gRouter)
 
 	fmt.Println("goAuthy is listening at:", cfg.ListenAddr)
 	if err := gRouter.Run(cfg.ListenAddr); err != nil {
